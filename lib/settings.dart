@@ -18,7 +18,7 @@ Color color_text_appbar = Colors.black;
 Color color_text_header = Colors.black;
 Color color_text_displaycard = Colors.black;
 Color color_text_button = Color.fromARGB(200, 255, 255, 255);
-
+Color color_text_info = Colors.black;
 
 double interline_padding = 5;
 double sizedbox_height = 5;

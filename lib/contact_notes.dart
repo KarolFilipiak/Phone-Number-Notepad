@@ -38,9 +38,11 @@ class _ContactNotesState extends State<ContactNotes> {
       notes = (await _storage.read(key: name))!;
       setState(() {
         notesTextControl.text = notes;
-        _isLoading = false;
       });
     }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   void clear_input()
@@ -61,117 +63,135 @@ class _ContactNotesState extends State<ContactNotes> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(
+          color: color_text_appbar
+        ),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("${widget.name}'s notes", style: TextStyle(color: color_text_appbar, fontWeight: FontWeight.values[6], fontStyle: FontStyle.italic, fontSize: 25),)
+            Text(
+              "Notes about ${widget.name}", 
+              style: TextStyle(
+                color: color_text_appbar, 
+                fontWeight: FontWeight.values[6], 
+                fontStyle: FontStyle.italic, fontSize: 25
+              ),
+            )
           ],
         ),
         backgroundColor: color_appbar,
       ),
       backgroundColor: color_background_1,
-      body: ListView(
-      scrollDirection: Axis.vertical,
-      shrinkWrap: true,
-      children: [
-        Container(
-          margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * margin_vertical, bottom: MediaQuery.of(context).size.height * margin_vertical, left: MediaQuery.of(context).size.width * margin_horizontal, right: MediaQuery.of(context).size.width * margin_horizontal),
-          child: Center(
-            child: Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(0, 0, 0, interline_padding),
-                  child: Text("Name: ${widget.name}"),  
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(0, 0, 0, 2 * interline_padding),
-                  child: Text(
-                    "Phone numbers: ${extractNumbersListToString(widget.numbers)}",
-                    maxLines: null,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * (1 - (2 * margin_horizontal)),
-                  height: MediaQuery.of(context).size.height * 0.7 * (1 - (2 * margin_vertical)),
-                  child: TextField(
-                    onChanged: ((var value) {
-                      setState(() {
-                        notes = value;
-                      });
-                    }
+      body: _isLoading
+      ? Center(child: CircularProgressIndicator())
+      : ListView(
+        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        children: [
+          Container(
+            margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * margin_vertical, bottom: MediaQuery.of(context).size.height * margin_vertical, left: MediaQuery.of(context).size.width * margin_horizontal, right: MediaQuery.of(context).size.width * margin_horizontal),
+            child: Center(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(0, 0, 0, interline_padding),
+                    child: Text(
+                      "Name: ${widget.name}",
+                      style: TextStyle(color: color_text_info, fontWeight: FontWeight.bold),
+                      maxLines: null,
+                      textAlign: TextAlign.center,
                     ),
-                    decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: "Your notes will appear here",
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.only(
-                          left: 8, right: 8, bottom: 8
-                        )
-                    ),
-                    controller: notesTextControl,
-                    maxLines: null,
-                    expands: true,
                   ),
-                ),
-                SizedBox(height: 2 * sizedbox_height),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextButton(
-                      onPressed: (() async{
-                        await _storage.write(key: name, value: notes);
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(0, 0, 0, 2 * interline_padding),
+                    child: Text(
+                      "Phone numbers: ${extractNumbersListToString(widget.numbers)}",
+                      style: TextStyle(color: color_text_info, fontWeight: FontWeight.bold),
+                      maxLines: null,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * (1 - (2 * margin_horizontal)),
+                    height: MediaQuery.of(context).size.height * 0.7 * (1 - (2 * margin_vertical)),
+                    child: TextField(
+                      onChanged: ((var value) {
                         setState(() {
-                          notesTextControl.text = notes;
+                          notes = value;
                         });
-                        final snackBar = SnackBar(content: Text('Note saved successfully'));
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       }
                       ),
-                      style: ElevatedButton.styleFrom(
-
-                        primary: color_button_1,
+                      decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          hintText: "Your notes will appear here",
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.only(
+                            left: 8, right: 8, bottom: 8
+                          )
                       ),
-                      child: Text(
-                        'SAVE', 
-                        style: TextStyle(color: color_text_button),
+                      controller: notesTextControl,
+                      maxLines: null,
+                      expands: true,
+                    ),
+                  ),
+                  SizedBox(height: 2 * sizedbox_height),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: (() async{
+                          await _storage.write(key: name, value: notes);
+                          setState(() {
+                            notesTextControl.text = notes;
+                          });
+                          final snackBar = SnackBar(content: Text('Note saved successfully'));
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        }
+                        ),
+                        style: ElevatedButton.styleFrom(
+
+                          primary: color_button_1,
+                        ),
+                        child: Text(
+                          'SAVE', 
+                          style: TextStyle(color: color_text_button),
+                        )
+                      ),
+                      SizedBox(width: MediaQuery.of(context).size.width*0.01),
+                      ElevatedButton(
+                        onPressed: () async {
+                          initNotes();
+                        }, 
+                        style: ElevatedButton.styleFrom(
+
+                          primary: color_button_1,
+                        ),
+                        child: Text(
+                          'RESTORE', 
+                          style: TextStyle(color: color_text_button)),
+                      ),
+                      SizedBox(width: MediaQuery.of(context).size.width*0.01),
+                      ElevatedButton(
+                        onPressed: () async {
+                          clear_input();
+                        }, 
+                        style: ElevatedButton.styleFrom(
+
+                          primary: color_button_1,
+                        ),
+                        child: Text(
+                          'CLEAR', 
+                          style: TextStyle(color: color_text_button)),
                       )
-                    ),
-                    SizedBox(width: MediaQuery.of(context).size.width*0.01),
-                    ElevatedButton(
-                      onPressed: () async {
-                        initNotes();
-                      }, 
-                      style: ElevatedButton.styleFrom(
-
-                        primary: color_button_1,
-                      ),
-                      child: Text(
-                        'RESTORE', 
-                        style: TextStyle(color: color_text_button)),
-                    ),
-                    SizedBox(width: MediaQuery.of(context).size.width*0.01),
-                    ElevatedButton(
-                      onPressed: () async {
-                        clear_input();
-                      }, 
-                      style: ElevatedButton.styleFrom(
-
-                        primary: color_button_1,
-                      ),
-                      child: Text(
-                        'CLEAR', 
-                        style: TextStyle(color: color_text_button)),
-                    )
-                  ],
-                )
-              ],
+                    ],
+                  )
+                ],
+              ),
             ),
           ),
+        ]
         ),
-      ]
-      ),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
+import 'dart:io' show Platform;
 import 'contact_notes.dart';
 import 'settings.dart';
 
@@ -15,6 +16,7 @@ class Welcome extends StatefulWidget {
 class _WelcomeState extends State<Welcome> {
   final _storage = const FlutterSecureStorage();
   bool _isLoading = true;
+  bool _isAndroid = false;
   bool _accessGranted = false;
   List<Contact>? contacts;
 
@@ -109,17 +111,26 @@ class _WelcomeState extends State<Welcome> {
 
   Future<void> _askPermissions() async 
   {
-    PermissionStatus permissionStatus = await _getContactPermission();
-    if (permissionStatus == PermissionStatus.granted) 
+    setState(() {
+      _isLoading = true;
+    });
+    if (Platform.isAndroid)
     {
-      contacts = await ContactsService.getContacts();
       setState(() {
-        _accessGranted = true;
+        _isAndroid = true;
       });
-    } 
-    else 
-    {
-      _handleInvalidPermissions(permissionStatus);
+      PermissionStatus permissionStatus = await _getContactPermission();
+      if (permissionStatus == PermissionStatus.granted) 
+      {
+        contacts = await ContactsService.getContacts();
+        setState(() {
+          _accessGranted = true;
+        });
+      } 
+      else 
+      {
+        _handleInvalidPermissions(permissionStatus);
+      }
     }
     setState(() {
       _isLoading = false;
@@ -178,14 +189,26 @@ class _WelcomeState extends State<Welcome> {
                   children: [
                     _isLoading
                       ? Text("LOADING...")
-                      : _accessGranted
-                        ? Column(
-                            children: [
-                              Text("Detected contacts: ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),),
-                              ContactCardsList(contacts),
-                            ],
-                          ) 
-                        : Text("ACCESS NOT GRANTED", style: TextStyle(fontWeight: FontWeight.bold),)
+                      : _isAndroid
+                        ? _accessGranted
+                          ? Column(
+                              children: [
+                                Text("Detected contacts: ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),),
+                                ContactCardsList(contacts),
+                              ],
+                            ) 
+                          : GestureDetector(
+                            onTap: openAppSettings,
+                            child: Text(
+                              "ACCESS NOT GRANTED\n(CHANGE PERMISSIONS IN THE SETTINGS AND REFRESH)\n(Premissions -> Contacts -> Allow)",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: color_text_error
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                        : Text("WRONG PLATFORM (WORKS ONLY ON ANDROID)", style: TextStyle(fontWeight: FontWeight.bold, color: color_text_error),)
                   ],
                 ),
               ),
@@ -195,6 +218,7 @@ class _WelcomeState extends State<Welcome> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
+                      _askPermissions();
                       setState(() {
                         
                       });
