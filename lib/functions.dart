@@ -21,7 +21,7 @@ String numbersToString (List<String> numlist)
     _out = _out + numlist[i];
     if (i < numlist.length-1)
     {
-      _out = _out + " , ";
+      _out = _out + ", ";
     }
   }
   return _out;
@@ -66,7 +66,23 @@ List<String> extractContacts (List<Contact>? contacts)
     }
 
     _phoneStr = extractNumbersListToString(_phones);
-    _out.add(_name + " ,, " + _phoneStr);
+    _out.add(_name + "\t" + _phoneStr);
+  }
+  return _out;
+}
+
+String extractContactsString(List<Contact>? contacts)
+{
+  List<String> x = extractContacts(contacts);
+  String _out = "";
+
+  for (var i = 0; i < x.length; i++)
+  {
+    _out = _out + x[i];
+    if (i < x.length-1)
+    {
+      _out = _out + "\n";
+    }
   }
   return _out;
 }

