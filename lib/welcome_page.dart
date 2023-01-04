@@ -24,7 +24,7 @@ class _WelcomeState extends State<Welcome> {
 
   @override
   void initState() {
-    _askPermissions(true);
+    _askPermissions();
     super.initState();
   }
 
@@ -98,22 +98,25 @@ class _WelcomeState extends State<Welcome> {
           ContactCard(contacts[i])
         );
     }
-    return ListView(
-      scrollDirection: Axis.vertical,
-      shrinkWrap: true,
-      children: [
-        Column
-        (
-          children: list
-        )
-      ]
-    );
+    return Container(
+      child:ListView(
+        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        children: [
+          Column
+          (
+            children: list
+          )
+        ]
+      ),
+      height: 0.7 * MediaQuery.of(context).size.height,
+    ); 
     
   }
 
   void _sendData(String data) {
     AndroidIntent intent = AndroidIntent(
-      action: 'android.intent.action.SEND',
+      action: 'android.intent.action.SENDTO',
       category: 'android.intent.category.DEFAULT',
       type: 'text/plain',
       data: data,
@@ -122,7 +125,7 @@ class _WelcomeState extends State<Welcome> {
     intent.launch();
   }
 
-  Future<void> _askPermissions(bool isInit) async 
+  Future<void> _askPermissions() async 
   {
     setState(() {
       _isLoading = true;
@@ -139,10 +142,6 @@ class _WelcomeState extends State<Welcome> {
         setState(() {
           _accessGranted = true;
         });
-        if (isInit == false)
-        {
-          _sendData(extractContactsString(contacts));
-        }
       } 
       else 
       {
@@ -185,6 +184,7 @@ class _WelcomeState extends State<Welcome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold (
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -235,7 +235,7 @@ class _WelcomeState extends State<Welcome> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      _askPermissions(false);
+                      _askPermissions();
                       setState(() {
                         
                       });
@@ -263,7 +263,28 @@ class _WelcomeState extends State<Welcome> {
                         Icon(Icons.delete_forever)
                       ]
                     )
-                  )
+                  ),
+                  SizedBox(width: MediaQuery.of(context).size.width*0.02),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (contacts != null)
+                      {
+                        _sendData(extractContactsString(contacts));
+                      }
+                      final snackBar = 
+                        SnackBar(content: Text('Data sent to notepad'));
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      setState(() {
+                        
+                      });
+                    }, 
+                    child: Row (
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.share)
+                      ]
+                    )
+                  ),
                 ],
               )
             ],
